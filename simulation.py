@@ -783,7 +783,8 @@ class RecognizesRoad:
     def crop_image(self, binary_image, top_left, size):
         x, y = top_left
         width = size
-        return binary_image[y:y+1, x:x+width].flatten()
+        futere_track = binary_image[y:y+1, x+13:x+13+width].flatten()
+        return binary_image[y:y+1, x:x+width].flatten(), futere_track
 
     # calcula a média ponderada do vetor para saber a posição do carro na pista
     def weighted_mean(self, vector):
@@ -808,7 +809,8 @@ class RecognizesRoad:
     def calculate_position(self, screen):
         binary_image = self.rgb_to_bw_binary(screen)
         # caso mude o tamanho ta tela, talvez tenha q mudar isso aqui
-        cropped_image = self.crop_image(binary_image, top_left=(35, 52), size=26)
+        cropped_image, future_track = self.crop_image(binary_image, top_left=(35, 52), size=26)
+        print(future_track)
         return self.weighted_mean(cropped_image)
 
 class Control:
@@ -899,7 +901,7 @@ if __name__ == "__main__":
 
     env = CarRacing(render_mode="human")
     rec_road = RecognizesRoad()
-    control = Control(0.9, 0.2, FPS)
+    control = Control(0.9, 0.3, FPS)
     signal_freq = FrequenceSignal(control_freq)
 
     quit = False
