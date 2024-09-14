@@ -789,8 +789,8 @@ class RecognizesRoad:
     def crop_image(self, binary_image, top_left, size):
         x, y = top_left
         width = size
-        futere_track = binary_image[y-16:y-15, x+13:x+14].flatten()
-        return binary_image[y:y+1, x:x+width].flatten(), futere_track
+        futere_track = binary_image[y-21:y-20, x+13:x+14].flatten()
+        return binary_image[y-5:y-4, x:x+width].flatten(), futere_track
 
     # calcula a média ponderada do vetor para saber a posição do carro na pista
     def weighted_mean(self, vector):
@@ -874,12 +874,12 @@ if __name__ == "__main__":
         global quit, restart
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                #if event.key == pygame.K_LEFT:
-                #    a[0] = -1.0
-                #if event.key == pygame.K_RIGHT:
-                #    a[0] = +1.0
-                #if event.key == pygame.K_UP:
-                #    a[1] = +1.0
+                if event.key == pygame.K_LEFT:
+                    a[0] = -1.0
+                if event.key == pygame.K_RIGHT:
+                    a[0] = +1.0
+                if event.key == pygame.K_UP:
+                    a[1] = +1.0
                 if event.key == pygame.K_DOWN:
                     a[2] = +0.8  # set 1.0 for wheels to block to zero rotation
                 if event.key == pygame.K_RETURN:
@@ -888,12 +888,12 @@ if __name__ == "__main__":
                     quit = True
 
             if event.type == pygame.KEYUP:
-                #if event.key == pygame.K_LEFT:
-                #    a[0] = 0
-                #if event.key == pygame.K_RIGHT:
-                #    a[0] = 0
-                #if event.key == pygame.K_UP:
-                #    a[1] = 0
+                if event.key == pygame.K_LEFT:
+                    a[0] = 0
+                if event.key == pygame.K_RIGHT:
+                    a[0] = 0
+                if event.key == pygame.K_UP:
+                    a[1] = 0
                 if event.key == pygame.K_DOWN:
                     a[2] = 0
 
@@ -906,9 +906,13 @@ if __name__ == "__main__":
 
     env = CarRacing(render_mode="human")
     rec_road = RecognizesRoad()
-    control = Control(0.9, 0.3, FPS)
+    control_w = Control(kp=1.0, kd=0.3, freq=FPS)
+    control_t = Control(kp=10, kd=0.0, freq=FPS) 
+
     signal_freq_w = FrequenceSignal(control_freq)
-    signal_freq_t = FrequenceSignal(control_freq)
+    signal_freq_a = FrequenceSignal(control_freq)
+    signal_freq_f = FrequenceSignal(control_freq)
+    
     currentFps = 0
     frameCount = 0
     start_time = 0
@@ -942,30 +946,30 @@ if __name__ == "__main__":
             # calculate the control signal
             if counter_loop >= control_freq:
                 counter_loop = 0
-                control_signal = control.pd_control(position)
+                control_signal_w = control_w.pd_control(position)
 
                 # set the signal to the frequence signal
-                signal_freq_w.set_signal(control_signal)
+                signal_freq_w.set_signal(control_signal_w)
 
+                set_point = 35
                 if(future_track[0] == 1):
-                    if(env.true_speed <= 60):
-                        signal_freq_t.set_signal((100 - abs(position))*(90/100) + 10)
-                    else:
-                        signal_freq_t.set_signal(0)
+                    set_point = 60
+                
+                control_signal_t = control_t.pd_control(set_point - env.true_speed)
+
+                if(control_signal_t < 0):
+                    signal_freq_f.set_signal(-control_signal_t/5)
+                    signal_freq_a.set_signal(0)
                 else:
-                    if(env.true_speed >= 15):
-                        signal_freq_t.set_signal(40)
-                    else:
-                        signal_freq_t.set_signal((100 - abs(position))*(65/100) + 35)
+                    signal_freq_a.set_signal(control_signal_t)
+                    signal_freq_f.set_signal(0)
+                
 
             a[0] = signal_freq_w.add_loop()
-            a[1] = 0
-            a[2] = 0    
+            a[1] = signal_freq_a.add_loop()
+            a[2] = signal_freq_f.add_loop()
 
-            if(future_track[0] == 1 or env.true_speed >= 15):
-                a[1] = signal_freq_t.add_loop()
-            elif (future_track[0] == 0):
-                a[2] = signal_freq_t.add_loop()
+            print(env.true_speed)
             
             # update the total reward
             total_reward += flags
