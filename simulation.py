@@ -789,7 +789,7 @@ class RecognizesRoad:
     def crop_image(self, binary_image, top_left, size):
         x, y = top_left
         width = size
-        futere_track = binary_image[y-6:y-5, x+13:x+14].flatten()
+        futere_track = binary_image[y-16:y-15, x+13:x+14].flatten()
         return binary_image[y:y+1, x:x+width].flatten(), futere_track
 
     # calcula a média ponderada do vetor para saber a posição do carro na pista
@@ -949,20 +949,20 @@ if __name__ == "__main__":
 
                 if(future_track[0] == 1):
                     if(env.true_speed <= 60):
-                        signal_freq_t.set_signal(100)
+                        signal_freq_t.set_signal((100 - abs(position))*(90/100) + 10)
                     else:
                         signal_freq_t.set_signal(0)
                 else:
                     if(env.true_speed >= 15):
-                        signal_freq_t.set_signal(20)
+                        signal_freq_t.set_signal(40)
                     else:
-                        signal_freq_t.set_signal(0)
+                        signal_freq_t.set_signal((100 - abs(position))*(65/100) + 35)
 
             a[0] = signal_freq_w.add_loop()
             a[1] = 0
             a[2] = 0    
 
-            if(future_track[0] == 1):
+            if(future_track[0] == 1 or env.true_speed >= 15):
                 a[1] = signal_freq_t.add_loop()
             elif (future_track[0] == 0):
                 a[2] = signal_freq_t.add_loop()
