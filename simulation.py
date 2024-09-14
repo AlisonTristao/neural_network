@@ -700,7 +700,7 @@ class CarRacing(gym.Env, EzPickle):
             ]
 
         assert self.car is not None
-        true_speed = np.sqrt(
+        self.true_speed = np.sqrt(
             np.square(self.car.hull.linearVelocity[0])
             + np.square(self.car.hull.linearVelocity[1])
         )
@@ -710,7 +710,7 @@ class CarRacing(gym.Env, EzPickle):
             if abs(value) > 1e-4:
                 pygame.draw.polygon(self.surf, points=points, color=color)
 
-        render_if_min(true_speed, vertical_ind(5, 0.02 * true_speed), (255, 255, 255))
+        render_if_min(self.true_speed, vertical_ind(5, 0.02 * self.true_speed), (255, 255, 255))
         # ABS sensors
         render_if_min(
             self.car.wheels[0].omega,
@@ -789,7 +789,7 @@ class RecognizesRoad:
     def crop_image(self, binary_image, top_left, size):
         x, y = top_left
         width = size
-        futere_track = binary_image[y:y+1, x+13:x+13+width].flatten()
+        futere_track = binary_image[y-6:y-5, x+13:x+14].flatten()
         return binary_image[y:y+1, x:x+width].flatten(), futere_track
 
     # calcula a média ponderada do vetor para saber a posição do carro na pista
@@ -803,7 +803,7 @@ class RecognizesRoad:
         
         # satura a media
         if total_weight != 0:
-            self.last_value = 100 - ((weighted_sum / total_weight) / (len(vector) + 1))
+            self.last_value = ((weighted_sum / total_weight) / (len(vector) + 1)) - 100
         else:
             if self.last_value <= 0:
                 self.last_value = -100
@@ -816,8 +816,7 @@ class RecognizesRoad:
         binary_image = self.rgb_to_bw_binary(screen)
         # caso mude o tamanho ta tela, talvez tenha q mudar isso aqui
         cropped_image, future_track = self.crop_image(binary_image, top_left=(35, 52), size=26)
-        print(future_track)
-        return self.weighted_mean(cropped_image)
+        return self.weighted_mean(cropped_image), future_track
 
 class Control:
     def __init__(self, kp, kd, freq):
@@ -863,7 +862,7 @@ class FrequenceSignal:
         if self.counter >= abs(self.signal):
             return 0
         else:
-            if self.signal > 0:
+            if self.signal < 0:
                 return -1
             else:   
                 return +1
@@ -879,8 +878,8 @@ if __name__ == "__main__":
                 #    a[0] = -1.0
                 #if event.key == pygame.K_RIGHT:
                 #    a[0] = +1.0
-                if event.key == pygame.K_UP:
-                    a[1] = +1.0
+                #if event.key == pygame.K_UP:
+                #    a[1] = +1.0
                 if event.key == pygame.K_DOWN:
                     a[2] = +0.8  # set 1.0 for wheels to block to zero rotation
                 if event.key == pygame.K_RETURN:
@@ -893,8 +892,8 @@ if __name__ == "__main__":
                 #    a[0] = 0
                 #if event.key == pygame.K_RIGHT:
                 #    a[0] = 0
-                if event.key == pygame.K_UP:
-                    a[1] = 0
+                #if event.key == pygame.K_UP:
+                #    a[1] = 0
                 if event.key == pygame.K_DOWN:
                     a[2] = 0
 
@@ -908,7 +907,8 @@ if __name__ == "__main__":
     env = CarRacing(render_mode="human")
     rec_road = RecognizesRoad()
     control = Control(0.9, 0.3, FPS)
-    signal_freq = FrequenceSignal(control_freq)
+    signal_freq_w = FrequenceSignal(control_freq)
+    signal_freq_t = FrequenceSignal(control_freq)
     currentFps = 0
     frameCount = 0
     start_time = 0
@@ -937,7 +937,7 @@ if __name__ == "__main__":
             screen, flags, terminated, truncated, null_arr = env.step(a)
 
             # calculate the position of the car on the road
-            position = rec_road.calculate_position(screen)
+            position, future_track = rec_road.calculate_position(screen)
 
             # calculate the control signal
             if counter_loop >= control_freq:
@@ -945,10 +945,28 @@ if __name__ == "__main__":
                 control_signal = control.pd_control(position)
 
                 # set the signal to the frequence signal
-                signal_freq.set_signal(control_signal)
+                signal_freq_w.set_signal(control_signal)
 
-            a[0] = signal_freq.add_loop()
+                if(future_track[0] == 1):
+                    if(env.true_speed <= 60):
+                        signal_freq_t.set_signal(100)
+                    else:
+                        signal_freq_t.set_signal(0)
+                else:
+                    if(env.true_speed >= 15):
+                        signal_freq_t.set_signal(20)
+                    else:
+                        signal_freq_t.set_signal(0)
 
+            a[0] = signal_freq_w.add_loop()
+            a[1] = 0
+            a[2] = 0    
+
+            if(future_track[0] == 1):
+                a[1] = signal_freq_t.add_loop()
+            elif (future_track[0] == 0):
+                a[2] = signal_freq_t.add_loop()
+            
             # update the total reward
             total_reward += flags
 
