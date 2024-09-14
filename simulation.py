@@ -811,6 +811,55 @@ class RecognizesRoad:
         cropped_image = self.crop_image(binary_image, top_left=(35, 52), size=26)
         return self.weighted_mean(cropped_image)
 
+class Control:
+    def __init__(self, kp, kd, freq):
+        self.pd_consts = np.array([kp, kd])
+        self.freq = freq
+        self.error_ant = 0.0
+
+    def pd_control(self, error):
+        kp = self.pd_consts[0]
+        kd = self.pd_consts[1]
+
+        control = (kp * error) + (kd * (error - self.error_ant) * self.freq)
+
+        if control > 100:
+            control = 100
+        elif control < -100:
+            control = -100
+
+        self.error_ant = error
+        return control
+    
+class FrequenceSignal:
+    def __init__(self, freq):
+        self.freq = freq
+        self.signal = 0.0
+        self.counter = 0
+
+    def set_signal(self, sig):
+        self.signal = round((sig/100) * self.freq)
+    
+    def get_signal(self):
+        return self.signal
+
+    def add_loop(self):
+        # count loop
+        self.counter += 1
+        
+        # reset counter
+        if self.counter >= self.freq:
+            self.counter = 0
+        
+        # return signal
+        if self.counter >= abs(self.signal):
+            return 0
+        else:
+            if self.signal > 0:
+                return -1
+            else:   
+                return +1
+
 if __name__ == "__main__":
     a = np.array([0.0, 0.0, 0.0])
 
@@ -818,10 +867,10 @@ if __name__ == "__main__":
         global quit, restart
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    a[0] = -1.0
-                if event.key == pygame.K_RIGHT:
-                    a[0] = +1.0
+                #if event.key == pygame.K_LEFT:
+                #    a[0] = -1.0
+                #if event.key == pygame.K_RIGHT:
+                #    a[0] = +1.0
                 if event.key == pygame.K_UP:
                     a[1] = +1.0
                 if event.key == pygame.K_DOWN:
@@ -832,10 +881,10 @@ if __name__ == "__main__":
                     quit = True
 
             if event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT:
-                    a[0] = 0
-                if event.key == pygame.K_RIGHT:
-                    a[0] = 0
+                #if event.key == pygame.K_LEFT:
+                #    a[0] = 0
+                #if event.key == pygame.K_RIGHT:
+                #    a[0] = 0
                 if event.key == pygame.K_UP:
                     a[1] = 0
                 if event.key == pygame.K_DOWN:
@@ -844,8 +893,14 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 quit = True
 
+    control_time = 0.05 # 100ms
+    control_freq = control_time * FPS
+    counter_loop = 0
+
     env = CarRacing(render_mode="human")
     rec_road = RecognizesRoad()
+    control = Control(0.9, 0.2, FPS)
+    signal_freq = FrequenceSignal(control_freq)
 
     quit = False
     while not quit:
@@ -867,7 +922,15 @@ if __name__ == "__main__":
             # calculate the position of the car on the road
             position = rec_road.calculate_position(screen)
 
-            #print("{:.3f}".format(position))
+            # calculate the control signal
+            if counter_loop >= control_freq:
+                counter_loop = 0
+                control_signal = control.pd_control(position)
+
+                # set the signal to the frequence signal
+                signal_freq.set_signal(control_signal)
+
+            a[0] = signal_freq.add_loop()
 
             # update the total reward
             total_reward += flags
@@ -877,6 +940,8 @@ if __name__ == "__main__":
                 print("\naction " + str([f"{x:+0.2f}" for x in a]))
                 print(f"step {steps} total_reward {total_reward:+0.2f}")
             steps += 1'''
+
+            counter_loop += 1
 
             # exit the game
             if terminated or truncated or restart or quit:
