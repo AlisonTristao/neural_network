@@ -36,7 +36,7 @@ WINDOW_H = 800
 SCALE = 6.0                 # Track scale
 TRACK_RAD = 900 / SCALE     # Track is heavily morphed circle with this radius
 PLAYFIELD = 2000 / SCALE    # Game over boundary
-FPS = 40                 # Frames per second
+FPS = 80               # Frames per second
 ZOOM = 2.7                  # Camera zoom
 ZOOM_FOLLOW = True          # Set to False for fixed view (don't use zoom)
 
@@ -789,7 +789,7 @@ class RecognizesRoad:
     def crop_image(self, binary_image, top_left, size):
         x, y = top_left
         width = size
-        futere_track = binary_image[y-21:y-20, x+13:x+14].flatten()
+        futere_track = binary_image[y-16:y-15, x+13:x+14].flatten()
         return binary_image[y-5:y-4, x:x+width].flatten(), futere_track
 
     # calcula a média ponderada do vetor para saber a posição do carro na pista
@@ -845,7 +845,8 @@ class FrequenceSignal:
         self.counter = 0
 
     def set_signal(self, sig):
-        self.signal = round((sig/100) * self.freq)
+        self.signal = round((sig/10* self.freq))
+        ##print("sig {:.3f}, self.freq: {:.3f},self.signal: {:.3f}".format(sig,self.freq,self.signal))
     
     def get_signal(self):
         return self.signal
@@ -900,13 +901,13 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 quit = True
 
-    control_time = 0.05 # 100ms
+    control_time = 0.01 # 100ms
     control_freq = control_time * FPS
     counter_loop = 0
 
     env = CarRacing(render_mode="human")
     rec_road = RecognizesRoad()
-    control_w = Control(kp=1.0, kd=0.3, freq=FPS)
+    control_w = Control(kp=0.2, kd=0.2, freq=FPS)
     control_t = Control(kp=10, kd=0.0, freq=FPS) 
 
     signal_freq_w = FrequenceSignal(control_freq)
@@ -925,7 +926,7 @@ if __name__ == "__main__":
         total_reward = 0.0
         restart = False
         #steps = 0
-        
+        countFreio = 0
         while True:
             frameCount += 1
             end_time = time.time()
@@ -951,26 +952,30 @@ if __name__ == "__main__":
                 # set the signal to the frequence signal
                 signal_freq_w.set_signal(control_signal_w)
 
-                set_point = 35
+                set_point = 30
                 if(future_track[0] == 1):
-                    set_point = 60
-                
+                    set_point = 70 - abs(position)          
+
                 control_signal_t = control_t.pd_control(set_point - env.true_speed)
 
                 if(control_signal_t < 0):
-                    signal_freq_f.set_signal(-control_signal_t/5)
-                    signal_freq_a.set_signal(0)
+                    signal_freq_f.set_signal(-control_signal_t*0)
+                    #signal_freq_a.set_signal(0)
+                    countFreio =0 
                 else:
                     signal_freq_a.set_signal(control_signal_t)
-                    signal_freq_f.set_signal(0)
+                    #signal_freq_f.set_signal(0)
                 
 
             a[0] = signal_freq_w.add_loop()
             a[1] = signal_freq_a.add_loop()
             a[2] = signal_freq_f.add_loop()
-
-            print(env.true_speed)
+            if(countFreio>1):
+                a[2] = 0
+            if(a[2] > 0):
+                countFreio += 1
             
+            print("velocidade: {:.3f}".format(env.true_speed))
             # update the total reward
             total_reward += flags
 
