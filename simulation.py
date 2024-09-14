@@ -954,17 +954,17 @@ if __name__ == "__main__":
 
                 set_point = 30
                 if(future_track[0] == 1):
-                    set_point = 70 - abs(position)          
+                    set_point = 55 - abs(position)          
 
                 control_signal_t = control_t.pd_control(set_point - env.true_speed)
 
                 if(control_signal_t < 0):
                     signal_freq_f.set_signal(-control_signal_t*0)
-                    #signal_freq_a.set_signal(0)
+                    signal_freq_a.set_signal(0)
                     countFreio =0 
                 else:
                     signal_freq_a.set_signal(control_signal_t)
-                    #signal_freq_f.set_signal(0)
+                    signal_freq_f.set_signal(0)
                 
 
             a[0] = signal_freq_w.add_loop()
