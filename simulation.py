@@ -1,6 +1,8 @@
 import math
 from typing import Optional, Union
 
+from data_logger import *
+
 import numpy as np
 import time
 import gym
@@ -480,6 +482,7 @@ class CarRacing(gym.Env, EzPickle):
         options: Optional[dict] = None,
     ):
         super().reset(seed=seed)
+
         self._destroy()
         self.world.contactListener_bug_workaround = FrictionDetector(
             self, self.lap_complete_percent
@@ -548,12 +551,14 @@ class CarRacing(gym.Env, EzPickle):
             self.car.fuel_spent = 0.0
             step_reward = self.reward - self.prev_reward
             self.prev_reward = self.reward
+
             if self.tile_visited_count == len(self.track) or self.new_lap:
                 # Truncation due to finishing lap
                 # This should not be treated as a failure
                 # but like a timeout
                 truncated = True
             x, y = self.car.hull.position
+
             if abs(x) > PLAYFIELD or abs(y) > PLAYFIELD:
                 terminated = True
                 step_reward = -100
@@ -924,7 +929,7 @@ if __name__ == "__main__":
     env = CarRacing(render_mode="human")
     rec_road = RecognizesRoad()
     control_w = Control(kp=0.9, kd=0.2, freq=FPS)
-    control_t = Control(kp=5, ki=0.0, freq=FPS) 
+    control_t = Control(kp=5, ki=0.01, freq=FPS) 
 
     signal_freq_w = FrequenceSignal(control_freq)
     signal_freq_a = FrequenceSignal(control_freq)
@@ -934,77 +939,78 @@ if __name__ == "__main__":
     frameCount = 0
     start_time = 0
     quit = False
-    while not quit:
-        # init display with default values
-        env.reset()
 
-        # reset variables
-        total_reward = 0.0
-        restart = False
-        #steps = 0
-        countFreio = 0
-        while True:
-            frameCount += 1
-            end_time = time.time()
-            elapsedTime = end_time - start_time
-            if(elapsedTime >=1 ):
-                currentFps = frameCount
-                frameCount = 0
-                start_time = time.time()
-            # register input from keyboard
-            register_input()
+    create_folder("teste_0")
 
-            # calculares the position of the car using a step time of 1/FPS with trans and angle
-            screen, flags, terminated, truncated, null_arr = env.step(a)
+    # init display with default values
+    env.reset()
+    
+    # reset variables
+    total_reward = 0.0
+    restart = False
+    #steps = 0
+    countFreio = 0
+    while True:
+        frameCount += 1
+        end_time = time.time()
+        elapsedTime = end_time - start_time
+        if(elapsedTime >=1 ):
+            currentFps = frameCount
+            frameCount = 0
+            start_time = time.time()
 
-            # calculate the position of the car on the road
-            position, future_track = rec_road.calculate_position(screen)
+        # register input from keyboard
+        register_input()
 
-            # calculate the control signal
-            if counter_loop >= control_freq:
-                counter_loop = 0
-                control_signal_w = control_w.pd_control(position)
+        # calculares the position of the car using a step time of 1/FPS with trans and angle
+        screen, flags, terminated, truncated, null_arr = env.step(a)
 
-                # set the signal to the frequence signal
-                signal_freq_w.set_signal(control_signal_w)
+        # calculate the position of the car on the road
+        position, future_track = rec_road.calculate_position(screen)
 
-                set_point = 50
-                if(future_track[0] == 1 and abs(position) < 50):
-                    set_point = 60 - abs(position)          
+        # calculate the control signal
+        if counter_loop >= control_freq:
+            counter_loop = 0
+            control_signal_w = control_w.pd_control(position)
 
-                control_signal_t = control_t.pi_control(set_point - env.true_speed)
+            # set the signal to the frequence signal
+            signal_freq_w.set_signal(control_signal_w)
 
-                if(control_signal_t < 0):
-                    signal_freq_f.set_signal(-control_signal_t*0.0)
-                    signal_freq_a.set_signal(0)
-                    countFreio = 0 
-                else:
-                    signal_freq_a.set_signal(control_signal_t)
-                    signal_freq_f.set_signal(0)
-                
+            set_point = 50
+            if(future_track[0] == 1 and abs(position) < 50):
+                set_point = 60 - abs(position)          
 
-            a[0] = signal_freq_w.add_loop()
-            a[1] = signal_freq_a.add_loop()
-            a[2] = signal_freq_f.add_loop()
+            control_signal_t = control_t.pi_control(set_point - env.true_speed)
 
-            if(countFreio>1):
-                a[2] = 0
-            if(a[2] > 0):
-                countFreio += 1
+            if(control_signal_t < 0):
+                signal_freq_f.set_signal(-control_signal_t*0.0)
+                signal_freq_a.set_signal(0)
+                countFreio = 0 
+            else:
+                signal_freq_a.set_signal(control_signal_t)
+                signal_freq_f.set_signal(0)
             
-            print("velocidade: {:.3f}".format(env.true_speed))
-            # update the total reward
-            total_reward += flags
 
-            ''' # print the action and the total reward every 200 steps
-            if steps % 200 == 0 or terminated or truncated:
-                print("\naction " + str([f"{x:+0.2f}" for x in a]))
-                print(f"step {steps} total_reward {total_reward:+0.2f}")
-            steps += 1'''
+        a[0] = signal_freq_w.add_loop()
+        a[1] = signal_freq_a.add_loop()
+        a[2] = signal_freq_f.add_loop()
 
-            counter_loop += 1
+        add_image_and_input_to_array(screen, a)
+        
+        #print("velocidade: {:.3f}".format(env.true_speed))
+        # update the total reward
+        #total_reward += flags
 
-            # exit the game
-            if terminated or truncated or restart or quit:
-                break
+        ''' # print the action and the total reward every 200 steps
+        if steps % 200 == 0 or terminated or truncated:
+            print("\naction " + str([f"{x:+0.2f}" for x in a]))
+            print(f"step {steps} total_reward {total_reward:+0.2f}")
+        steps += 1'''
+
+        counter_loop += 1
+
+        # exit the game
+        if terminated or truncated or restart or quit:
+            save_data()
+            break
     env.close()
