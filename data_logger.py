@@ -10,9 +10,9 @@ def create_folder(folder):
     if not os.path.exists('data/' + str(folder)):
         os.makedirs('data/' + str(folder))
         os.makedirs('data/' + str(folder) + '/pictures')
-        print(f'Pasta "{'data/' + str(folder)}" criada com sucesso!')
+        print(f'Pasta "data/{str(folder)}" criada com sucesso!')
     else:
-        print(f'A pasta "{'data/' + str(folder)}" já existe.')
+        print(f'A pasta "data/{str(folder)}" já existe.')
 
     name_folder = folder
 
@@ -31,3 +31,5 @@ def save_data():
         # Salvar o input
         #arquivo.write(str(arr_inputs[i][0]) + "," + str(arr_inputs[i][1]) + "\n")
         arquivo.write('imagem_' + str(i)+ ',' + str(arr_inputs[i][0]) + "," + str(arr_inputs[i][1]) + "," + str(arr_inputs[i][2]) + "\n")
+
+    print('Dados salvos com sucesso!')
