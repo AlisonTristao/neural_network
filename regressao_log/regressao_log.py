@@ -131,8 +131,12 @@ theta_0 = []
 theta_1 = []
 
 for k in range(epochs): # 10000
-    theta[0] -= alpha * gradient(0, theta, xs, ys)
-    theta[1] -= alpha * gradient(1, theta, xs, ys)
+    # changes values at the same time
+    t_0 = theta[0] - alpha * gradient(0, theta, xs, ys)
+    t_1 = theta[1] - alpha * gradient(1, theta, xs, ys)
+
+    theta[0] = t_0
+    theta[1] = t_1
 
     custo.append(J(theta, xs, ys))
     acuracia.append(accuracy(ys, h(xs, theta)))
