@@ -1,11 +1,27 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1' 
+
 import tensorflow as tf
 
-from tensorflow.keras import Model
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.losses import categorical_crossentropy
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, Dropout
+from tensorflow import keras as k
+
+print(tf.test.gpu_device_name())
+
+# Lista todas as GPUs visíveis pelo TensorFlow
+gpus = tf.config.list_physical_devices('GPU')
+
+# Exibe a quantidade de GPUs detectadas
+print(f"GPUs detectadas: {len(gpus)}")
+
+# Exibe informações sobre cada GPU detectada
+for gpu in gpus:
+    print(gpu)
+
+from keras import Model, Sequential
+from keras.utils import to_categorical # type: ignore
+from keras.losses import categorical_crossentropy # type: ignore
+from keras.src.legacy.preprocessing.image import ImageDataGenerator
+from keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, Dropout # type: ignore
 
 import cv2
 

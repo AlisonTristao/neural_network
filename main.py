@@ -1,6 +1,6 @@
 from controle import *
 from data_logger import *
-#from neural import *
+from neural import *
 from simulation import *   
 
 control_time = 0.01 # 10ms
