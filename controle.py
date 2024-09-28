@@ -9,6 +9,10 @@ class RecognizesRoad:
         gray_image = np.mean(image_array, axis=-1)
         return abs(1 - ((gray_image > threshold).astype(np.uint8)))  # 1 para preto e 0 para branco
     
+    # recebe uma imagem de 96x96
+    def crop_image_to_86x86(self, image_array):
+        return image_array[6:90, 6:90]
+
     # captura a parte da imagem que contém a pista levemente a frente do carro
     def crop_image(self, binary_image, top_left, size):
         x, y = top_left

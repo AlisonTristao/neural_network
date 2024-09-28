@@ -1,6 +1,6 @@
 from controle import *
 from data_logger import *
-from neural import *
+#from neural import *
 from simulation import *   
 
 control_time = 0.01 # 10ms
@@ -36,9 +36,9 @@ while True:
         # set the signal to the frequence signal to omega
         signal_freq_omega.set_signal(control_omega.pd_control(position))
 
-        set_point = 50
+        set_point = 40
         if(future_track[0] == 1 and abs(position) < 50):
-            set_point = 60 - abs(position)          
+            set_point = 50 - abs(position)          
 
         # set the signal to the frequence signal 
         signal_freq_trans.set_signal(control_trans.pi_control(set_point - car.true_speed))
