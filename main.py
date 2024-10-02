@@ -2,6 +2,7 @@ from controle import *
 from data_logger import *
 #from neural import *
 from simulation import *   
+import tensorflow as tf
 
 control_time = 0.01 # 10ms
 control_freq = control_time * FPS
@@ -17,43 +18,98 @@ signal_freq_trans = FrequenceSignal(control_freq)
 
 car = CarRacing(render_mode="human")
 
+# salva as 6 ultimas imagens
+last_images = []
+
 # create the folder to save the data
-create_folder("teste_1")
-
-# init display with default values
-car.reset()
-screen, close = run_simluation(car, input)
-
-while True:
-    quit, input = register_input(input)
-
-    position, future_track = sensor_theta.calculate_position(screen)
-
-    # calculate the control signal
-    if counter_loop >= control_freq:
-        counter_loop = 0
-
-        # set the signal to the frequence signal to omega
-        signal_freq_omega.set_signal(control_omega.pd_control(position))
-
-        set_point = 40
-        if(future_track[0] == 1 and abs(position) < 50):
-            set_point = 50 - abs(position)          
-
-        # set the signal to the frequence signal 
-        signal_freq_trans.set_signal(control_trans.pi_control(set_point - car.true_speed))
-
-    # apply pwm signal to the car
-    input[0] = signal_freq_omega.calculate_signal()
-    input[1] = signal_freq_trans.calculate_signal()
-
-    # run the simulation
+create_folder("teste_8")
+for _ in range(1):
+    # init display with default values
+    car.reset()
     screen, close = run_simluation(car, input)
 
-    # save the data
-    add_image_and_input_to_array(screen, input)
+    counter = 0
 
-    counter_loop += 1
-    if close or quit:
-        save_data()
-        break
+    # create a neural network
+    new_model = tf.keras.models.load_model('model.keras')
+
+    while True:
+        quit, input = register_input(input)
+
+        position, future_track = sensor_theta.calculate_position(screen)
+
+        if counter_loop >= control_freq:
+            counter_loop = 0
+
+            # set the signal to the frequence signal to omega
+            #signal_freq_omega.set_signal(control_omega.pd_control(position))
+
+            set_point = 40
+            if(future_track[0] == 1 and abs(position) < 50):
+                set_point = 55 - abs(position/2)          
+
+            # set the signal to the frequence signal 
+            trans = control_trans.pi_control(set_point - car.true_speed)
+            if(trans > 0):
+                signal_freq_trans.set_signal(trans)
+            else:
+                signal_freq_trans.set_signal(0)
+
+        # apply pwm signal to the car
+        #input[0] = signal_freq_omega.calculate_signal()# 
+
+        if position >= 35:
+            input[0] = 1
+        elif position <= -35:
+            input[0] = -1
+        else: 
+            input[0] = 0
+
+        #if input[0] != 0 or input[1] != 0:
+        #    add_image_and_input_to_array(screen, input)
+
+
+        # save the last 6 images
+        image = pre_processes.crop_image_to_86x86(screen.copy())
+        image = cv2.resize(image, (84, 84))
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        #last_images.append(image)
+
+
+        testee = np.array(image, dtype=np.float32).reshape(-1, 84, 84, 1)/255.0
+
+        #testee = testee[0:6]  # Seleciona as 6 primeiras imagens, se existirem
+        #imagens_reformuladas = testee.reshape(1, 6, 84, 84, 1)
+
+        saida = np.argmax(new_model.predict(testee[0:1]))
+
+        print(saida)
+
+        if saida == 8:
+            input = [1, 1, 0]
+        elif saida == 7:
+            input = [0, 0, 0]
+        elif saida == 6:
+            input = [1, -1, 0]
+        elif saida == 5:
+            input = [0, 1, 0]
+        elif saida == 4:
+            input = [0, 0, 0]
+        elif saida == 3:
+            input = [0, -1, 0]
+        elif saida == 2:
+            input = [-1, 1, 0]
+        elif saida == 1:
+            input = [-1, 0, 0]
+        elif saida == 0:
+            input = [-1, -1, 0]
+
+        input[1] = signal_freq_trans.calculate_signal() 
+
+        # run the simulation
+        screen, close = run_simluation(car, input)
+
+        counter_loop += 1
+        if close or quit:
+            save_data()
+            break

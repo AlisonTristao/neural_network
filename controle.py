@@ -17,7 +17,7 @@ class RecognizesRoad:
     def crop_image(self, binary_image, top_left, size):
         x, y = top_left
         width = size
-        futere_track = binary_image[y-50:y-49, x+13:x+14].flatten()
+        futere_track = binary_image[y-30:y-29, x+13:x+14].flatten()
         return binary_image[y-10:y-9, x:x+width].flatten(), futere_track
 
     # calcula a média ponderada do vetor para saber a posição do carro na pista

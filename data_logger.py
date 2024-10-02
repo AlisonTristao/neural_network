@@ -5,14 +5,18 @@ from controle import *
 
 pre_processes = RecognizesRoad()
 
-offset = 5087
+def contar_arquivos(name_folder):
+    arquivos = os.listdir(name_folder)
+        
+    # Contar apenas os arquivos (não subpastas)
+    return sum(os.path.isfile(os.path.join(name_folder, f)) for f in arquivos)
 
 arr_imagens = []
 arr_inputs = []
 name_folder = ''
 
 def create_folder(folder):
-    global name_folder
+    global name_folder, arr_imagens, arr_inputs
     if not os.path.exists('data/' + str(folder)):
         os.makedirs('data/' + str(folder))
         os.makedirs('data/' + str(folder) + '/pictures')
@@ -29,18 +33,24 @@ def add_image_and_input_to_array(image, input):
     arr_inputs.append(input.copy())
 
 def save_data():
+    global name_folder, arr_imagens, arr_inputs
+
+    offset = contar_arquivos('data/' + str(name_folder) + '/pictures')
+    
+    print("contador iniciando em:", offset)
+
     arquivo = open('data/' + str(name_folder) + '/input_.csv', 'a')
     for i in range(len(arr_imagens)):
 
         # Salvar a imagem
         cv2.imwrite('data/' + str(name_folder) + '/pictures/imagem_' + str(i + offset) + '.png', arr_imagens[i])
 
-        # adiciona o freio na mesma coluna
-        if arr_inputs[i][2] == 1:
-            arr_inputs[i][1] = -1
-
         # Salvar o input
         #arquivo.write(str(arr_inputs[i][0]) + "," + str(arr_inputs[i][1]) + "\n")
         arquivo.write('imagem_' + str(i + offset) + ',' + str(arr_inputs[i][0]) + "," + str(arr_inputs[i][1]) + "\n")
 
+    # zera os arrays
+    arr_imagens = []
+    arr_inputs = []
+    
     print('Dados salvos com sucesso!')
