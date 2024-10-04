@@ -23,14 +23,14 @@ last_images = []
 
 counter = 0
 contador_amostras = [0, 0, 0]
-QTD_AMOSTRAS = 1000
+QTD_AMOSTRAS = 333
 
 parada = False
 
 # create the folder to save the data
-create_folder("teste_mamada_2")
+create_folder("teste_030030")
 
-for i in range(2):
+while not parada:
     # init display with default values
     car.reset()
     screen, close = run_simluation(car, input)
@@ -69,22 +69,26 @@ for i in range(2):
             input[0] = 0
 
         if counter >= 30:
-            add_image_and_input_to_array(screen, input)
-        '''    if input[0] == -1 and contador_amostras[0] < QTD_AMOSTRAS:
+            input_invevrtido = input.copy()
+            input_invevrtido[0] = input_invevrtido[0] * -1
+
+            if input[0] == -1 and contador_amostras[0] < QTD_AMOSTRAS:
+                add_image_and_input_to_array(cv2.flip(screen, 1), input_invevrtido)
                 add_image_and_input_to_array(screen, input)
                 contador_amostras[0] += 1
                 print("curva -1")
             elif input[0] == 0 and contador_amostras[1] < QTD_AMOSTRAS:
+                add_image_and_input_to_array(cv2.flip(screen, 1), input_invevrtido)
                 add_image_and_input_to_array(screen, input)
                 contador_amostras[1] += 1
                 print("reta 0")
             elif input[0] == 1 and contador_amostras[2] < QTD_AMOSTRAS:
+                add_image_and_input_to_array(cv2.flip(screen, 1), input_invevrtido)
                 add_image_and_input_to_array(screen, input)
                 contador_amostras[2] += 1
                 print("curva 1")
             elif contador_amostras[0] == QTD_AMOSTRAS and contador_amostras[1] == QTD_AMOSTRAS and contador_amostras[2] == QTD_AMOSTRAS:
                 parada = True
-        '''
         
         counter += 1
 

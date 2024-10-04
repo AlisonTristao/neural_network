@@ -11,8 +11,11 @@ class RecognizesRoad:
     
     # recebe uma imagem de 96x96
     def crop_image_to_86x86(self, image_array):
-        return image_array[6:90, 6:90]
-
+        # sorteia um 0 e 96 para cortar a imagem e deixar com 86x86
+        x = np.random.randint(0, 10)
+        y = np.random.randint(0, 10)
+        return image_array[y:y+84, x:x+84]
+    
     # captura a parte da imagem que contém a pista levemente a frente do carro
     def crop_image(self, binary_image, top_left, size):
         x, y = top_left

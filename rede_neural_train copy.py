@@ -32,8 +32,8 @@ optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 model.compile(optimizer=optimizer, loss='mean_squared_error', metrics=['accuracy'])
 
 # Definir o caminho para a pasta com as imagens e input
-pasta_imagens = 'data/teste_mamada/pictures'
-arquivo_csv = 'data/teste_mamada/input_.csv'
+pasta_imagens = 'data/teste_mamada_4/pictures'
+arquivo_csv = 'data/teste_mamada_4/input_.csv'
 
 imagens = []
 input = []

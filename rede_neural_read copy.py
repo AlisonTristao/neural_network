@@ -12,6 +12,21 @@ IMG_HEIGHT = 84
 IMG_WIDTH = 84
 IMG_CHANNELS = 1
 
+# Custom callback to stop training when accuracy gets too high
+class StopOnHighAccuracy(tf.keras.callbacks.Callback):
+    def _init_(self, threshold=0.95):  # Set your accuracy threshold
+        super(StopOnHighAccuracy, self)._init_()
+        self.threshold = threshold
+
+    def on_epoch_end(self, epoch, logs=None):
+        # Check the training or validation accuracy
+        accuracy = logs.get('accuracy')  # Use 'val_accuracy' for validation accuracy
+        if accuracy >= self.threshold:
+            print(f"\nStopping training as accuracy reached {accuracy:.4f}")
+            self.model.stop_training = True
+
+stop_on_high_accuracy = StopOnHighAccuracy(threshold=0.95)
+
 # Show the model architecture
 new_model.summary()
 
