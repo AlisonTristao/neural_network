@@ -81,25 +81,3 @@ def load_csv(arquivo_csv, len_gif=4):
             input.append([linha[1], linha[2]])
 
     return np.array([input[i] for i in range(0, len(input), len_gif)], dtype=np.float32)
-
-def accuracy(y_true, y_pred):  
-    # Condição 1: y_pred[:, 0] > 1/3 e y_true[:, 0] == 1, idem para o segundo valor
-    cond1 = tf.logical_and(tf.greater(y_pred[:, 0], 1/3), tf.equal(y_true[:, 0], 1))
-    cond1 = tf.logical_and(cond1, tf.greater(y_pred[:, 1], 1/3))
-    cond1 = tf.logical_and(cond1, tf.equal(y_true[:, 1], 1))
-
-    # Condição 2: y_pred[:, 0] < -1/3 e y_true[:, 0] == -1, idem para o segundo valor
-    cond2 = tf.logical_and(tf.less(y_pred[:, 0], -1/3), tf.equal(y_true[:, 0], -1))
-    cond2 = tf.logical_and(cond2, tf.less(y_pred[:, 1], -1/3))
-    cond2 = tf.logical_and(cond2, tf.equal(y_true[:, 1], -1))
-
-    # Condição 3: -1/3 < y_pred[:, 0] < 1/3 e y_true[:, 0] == 0, idem para o segundo valor
-    cond3 = tf.logical_and(tf.greater(y_pred[:, 0], -1/3), tf.less(y_pred[:, 0], 1/3))
-    cond3 = tf.logical_and(cond3, tf.equal(y_true[:, 0], 0))
-    cond3 = tf.logical_and(cond3, tf.greater(y_pred[:, 1], -1/3))
-    cond3 = tf.logical_and(cond3, tf.less(y_pred[:, 1], 1/3))
-    cond3 = tf.logical_and(cond3, tf.equal(y_true[:, 1], 0))
-
-    correct_predictions = tf.logical_or(tf.logical_or(cond1, cond2), cond3)
-    accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
-    return accuracy
