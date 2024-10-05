@@ -1,0 +1,5 @@
+1.b - Não eh possivel chegar em 100% de acuracia pois temos pntos x que compartilham o mesmo espaço de solução (0, 1)
+e nossa funcao que interpola (sigmoide) nao consegue ter dois valores de y para o mesmo x. Para isso teriamos que ter um modelo de interpolação com mais graus de liberdade.
+
+1.d - Quando diminuimos o alpha, o tempo em que atingimos uma acuracia alta fica mais longa.
+

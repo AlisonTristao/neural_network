@@ -119,8 +119,8 @@ def plot_J_theta(theta_0, theta_1, J):
 
     show()
 
-alpha = 0.1
-epochs = 1000
+alpha = 0.01
+epochs = 2000
 theta = [0, -1]
 
 # arrays for plotting
@@ -153,7 +153,7 @@ for k in range(epochs): # 10000
 plot_data(custo, acuracia, fronteira)
 
 # e 
-#plot_J_theta(theta_0, theta_1, custo)
+plot_J_theta(theta_0, theta_1, custo)
 
 # g (opcional)
-#plot_fronteira(theta)
+plot_fronteira(theta)
