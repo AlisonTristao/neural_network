@@ -23,13 +23,13 @@ car = CarRacing(render_mode="human")
 LEN_GIF = 4
 
 # create the folder to save the data
-create_folder("teste_6")
+create_folder("teste_validacao_seed4")
 
-model = load_model('model_trained.keras')
+#model = load_model('model_trained.keras')
 
 for _ in range(1):
     # init display with default values
-    car.reset(seed=0)
+    car.reset()
     screen, close = run_simluation(car, input)
 
     # save frames count
@@ -62,8 +62,8 @@ for _ in range(1):
             imagens_por_linha = np.expand_dims(imagens_por_linha, axis=0)  # Adiciona dimensão do batch
 
             # predict the input
-            pred = model.predict(imagens_por_linha, verbose=False)
-            input_pred = np.round(pred)
+            #pred = model.predict(imagens_por_linha, verbose=False)
+            #input_pred = np.round(pred)
 
         if counter_loop >= control_freq:
             counter_loop = 0

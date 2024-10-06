@@ -52,11 +52,13 @@ for _ in range(1):
         imagens_por_linha = np.expand_dims(imagens_por_linha, axis=0)  # Adiciona dimensão do batch
 
         # predict the input
-        input_pred = np.round(model.predict(imagens_por_linha, verbose=False))
-
+        input_pred = model.predict(imagens_por_linha, verbose=False)
+        print("input pred before:", input_pred)
+        input_pred = np.round(input_pred)
+        print("input pred after:", input_pred)
         input[0] = input_pred[0][0]
-        input[1] = input_pred[0][1]
-
+        #input[1] = input_pred[0][1]
+        input[1] = input_nao_usado[1]
         # run the simulation
         screen, close = run_simluation(car, input)
 
