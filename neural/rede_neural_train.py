@@ -7,21 +7,17 @@ from data_logger import *
 import numpy as np
 from CustomAccuracy import *
 
+x_train = 'data/teste_random_seed/pictures'
+y_train = 'data/teste_random_seed/input_.csv'
 
-
-
-
-x_train = 'data/train_1/pictures'
-y_train = 'data/train_1/input_.csv'
-
-x_valid = 'data/teste_validacao_seed1/pictures'
-y_valid = 'data/teste_validacao_seed1/input_.csv'
+x_valid = 'data/teste_random_seed_1/pictures'
+y_valid = 'data/teste_random_seed_1/input_.csv'
 
 # Dados para treino e validacao
 imagens = load_images(x_train, 1)
-input = load_csv(y_train, 1)
+input, speed = load_csv(y_train, 1)
 imagens_valid = load_images(x_valid, 1)
-input_valid = load_csv(y_valid, 1)
+input_valid, speed_valid = load_csv(y_valid, 1)
 
 # carrega o modelo e compila
 model = load_model('model.keras', custom_objects={'CustomAccuracy': CustomAccuracy})
@@ -41,7 +37,7 @@ percentual_correspondencia = np.mean(correspondencias) * 100
 print(f'As previsões correspondem aos valores de input_valid em {percentual_correspondencia:.2f}% dos casos.')'''
 
 # treina o modelo
-history = model.fit(imagens, input, epochs=70, batch_size=32, validation_data=(imagens_valid, input_valid))
+history = model.fit([imagens, speed], input, epochs=70, batch_size=32, validation_data=([imagens_valid, speed_valid], input_valid))
 
 # salva o modelo
 model.save('model_trained.keras')

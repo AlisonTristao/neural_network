@@ -3,10 +3,8 @@ import tensorflow as tf
 from tensorflow import keras
 from keras.models import load_model  # type: ignore
 
-import threading
 import numpy as np
 import cv2
-from queue import Queue
 
 import matplotlib.pyplot as plt
 
@@ -48,17 +46,17 @@ for _ in range(1):
         #if len(last_frames) == LEN_GIF:
             # Normalizando e preparando o array para o modelo
         #imagens_por_linha = np.array(last_frames, dtype=np.float32) / 255.0
-        imagens_por_linha = np.expand_dims(screen, axis=0)/ 255.0  # Adiciona dimensão do batch
+        imagens_por_linha = np.expand_dims(screen, axis=0)/ 255.0 
         imagens_por_linha = np.expand_dims(imagens_por_linha, axis=0)  # Adiciona dimensão do batch
+        speed = np.array([car.true_speed/160], dtype=np.float32)
+        speed = np.expand_dims(speed, axis=0)
 
         # predict the input
-        input_pred = model.predict(imagens_por_linha, verbose=False)
-        print("input pred before:", input_pred)
-        input_pred = np.round(input_pred)
-        print("input pred after:", input_pred)
+        input_pred = np.round(model.predict([imagens_por_linha, speed], verbose=False))
+
         input[0] = input_pred[0][0]
-        #input[1] = input_pred[0][1]
-        input[1] = input_nao_usado[1]
+        input[1] = input_pred[0][1]
+
         # run the simulation
         screen, close = run_simluation(car, input)
 

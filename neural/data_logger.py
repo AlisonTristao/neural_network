@@ -16,6 +16,7 @@ def contar_arquivos(name_folder):
 
 arr_imagens = []
 arr_inputs = []
+arr_speed = []
 name_folder = ''
 
 def create_folder(folder):
@@ -29,14 +30,15 @@ def create_folder(folder):
 
     name_folder = folder
 
-def add_image_and_input_to_array(image, input):
+def add_image_and_input_to_array(image, input, speed):
     # adiciona a imagem e o input ao array
     image = pre_processes.crop_image_to_84x84(image)
     arr_imagens.append(image)
     arr_inputs.append(input.copy())
+    arr_speed.append(speed)
 
 def save_data():
-    global name_folder, arr_imagens, arr_inputs
+    global name_folder, arr_imagens, arr_inputs, arr_speed
 
     offset = contar_arquivos('data/' + str(name_folder) + '/pictures')
     
@@ -50,11 +52,12 @@ def save_data():
 
         # Salvar o input
         #arquivo.write(str(arr_inputs[i][0]) + "," + str(arr_inputs[i][1]) + "\n")
-        arquivo.write('imagem_' + str(i + offset) + ',' + str(arr_inputs[i][0]) + "," + str(arr_inputs[i][1]) + "\n")
+        arquivo.write('imagem_' + str(i + offset) + ',' + "{:.2f}".format(arr_inputs[i][0]) + "," + "{:.2f}".format(arr_inputs[i][1]) + "," + "{:.2f}".format(arr_speed[i]) + "\n")
 
     # zera os arrays
     arr_imagens = []
     arr_inputs = []
+    arr_speed = []
     
     print('Dados salvos com sucesso!')
 
@@ -74,10 +77,12 @@ def load_images(pasta_imagens, len_gif=4):
 
 def load_csv(arquivo_csv, len_gif=4):
     input = []
+    speed = []
     with open(arquivo_csv, newline='', encoding='utf-8') as csvfile:
         leitor = csv.reader(csvfile)
         
         for i, linha in enumerate(leitor):
             input.append([linha[1], linha[2]])
+            speed.append(linha[3])
 
-    return np.array([input[i] for i in range(0, len(input), len_gif)], dtype=np.float32)
+    return np.array([input[i] for i in range(0, len(input), len_gif)], dtype=np.float32), np.array(speed, dtype=np.float32)/80

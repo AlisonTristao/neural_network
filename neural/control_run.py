@@ -23,7 +23,7 @@ car = CarRacing(render_mode="human")
 LEN_GIF = 4
 
 # create the folder to save the data
-create_folder("teste_validacao_seed4")
+create_folder("teste_random_seed_1")
 
 #model = load_model('model_trained.keras')
 
@@ -70,7 +70,7 @@ for _ in range(1):
 
             set_point = 20
             if(future_track[0] == 1 and abs(position) < 50):
-                set_point = 25 #- abs(position/2)          
+                set_point = 40 #- abs(position/2)          
 
             # set the signal to the frequence signal 
             trans = control_trans.pi_control(set_point - car.true_speed)
@@ -88,7 +88,7 @@ for _ in range(1):
 
         # salva as fotos sem zoom
         if counter >= 30:
-            add_image_and_input_to_array(screen, input)
+            add_image_and_input_to_array(screen, input, car.true_speed)
             
         counter += 1
 
