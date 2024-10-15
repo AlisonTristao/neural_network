@@ -255,12 +255,9 @@ if __name__ == '__main__':
     ]
 
     parser = argparse.ArgumentParser(description='Configurações do treinamento.')
-    
-    # Adiciona argumentos para RUN, EPOCHS e o flag para plotagem
     parser.add_argument('--run', type=int, default=1)
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--plot_worlds', action='store_true')
-    
     args = parser.parse_args()
 
     # Chama a função principal com os argumentos fornecidos
