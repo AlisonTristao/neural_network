@@ -53,9 +53,10 @@ def step(init_state, action):
 
     return next_state, reward
 
-def plot_world(world_height, world_width, start, finish, penality_states, q_values, states_arr=[], epoch=0, steps=0, rewards=0):
+def plot_world(world_height, world_width, start, finish, penality_states, states_arr=[], q_values_arr = [], epoch=0, steps=0, rewards=0):
     # gera o mundo com casas normais
     world = np.zeros((world_height, world_width))
+    color = np.zeros((world_width, world_height))
 
     fig, ax = plt.subplots(figsize=(world_width, world_height))
 
@@ -71,7 +72,7 @@ def plot_world(world_height, world_width, start, finish, penality_states, q_valu
         ax.text(penality[0] + 0.5, penality[1] + 0.1, 'cliff', va='center', ha='center', fontsize=8)
 
     # cores para cada estado
-    cmap = plt.cm.colors.ListedColormap(['red', 'lightgray', 'yellow', 'green'])
+    cmap = plt.cm.colors.ListedColormap(['red', 'white', 'yellow', 'green'])
     bounds = [-1.5, -0.5, 0.5, 1.5, 2.5]
     norm = plt.cm.colors.BoundaryNorm(bounds, cmap.N)
 
@@ -79,16 +80,6 @@ def plot_world(world_height, world_width, start, finish, penality_states, q_valu
     ax.set_xticks(np.arange(0, world_width+1, 1))
     ax.set_yticks(np.arange(0, world_height+1, 1))
     ax.grid(color='black', linestyle='-', linewidth=1)
-
-    # q-values e política ótima
-    max_action = get_optimal_policy(q_values)
-    for y in range(1, world_height):
-        for x in range(world_width):
-            direction_text = direction(max_action[x][y])
-            if direction_text: 
-                ax.text(x + 0.5, y + 0.5, direction_text, va='center', ha='center', fontsize=20)
-                ax.text(x + 0.5, y + 0.1, "{:.1f}".format(q_values[x][y][np.argmax(q_values[x, y, :])]), 
-                    va='center', ha='center', fontsize=8)
 
     # informações sobre a época, passos e recompensas
     if len(states_arr) > 0:
@@ -98,19 +89,63 @@ def plot_world(world_height, world_width, start, finish, penality_states, q_valu
         info_ax.text(0.5, 0.5, info_text, va='center', ha='left', fontsize=10, color='black',
                     bbox=dict(facecolor='white', alpha=0.8))
 
-    def init():
-        ball.set_data([], [])
-        return ball,
+    q_texts = []
+    def clear_q_texts():
+        for txt in q_texts:
+            txt.remove()
+        q_texts.clear()
 
-    def update(frame):
+    def write_q_values(q_values, last_q_values, ax):
+        max_action = get_optimal_policy(q_values)
+        last_max_action = get_optimal_policy(last_q_values)
+
+        for y in range(1, world_height):
+            for x in range(world_width):
+                # pega a direcao da acao com maior recompensa
+                direction_text = direction(max_action[x][y])
+                last_direction_text = direction(last_max_action[x][y])
+
+                # se a direcao mudou, pinta de amarelo
+                if direction_text != last_direction_text:
+                    color[x][y] = 1
+                
+                # adiciona o texto de direcao
+                if direction_text:
+                    dir_txt = ax.text(x + 0.5, y + 0.5, direction_text, va='center', ha='center', fontsize=20, color= 'yellow' if color[x][y] == 1 else 'black')
+                    q_texts.append(dir_txt)
+                
+                # adiciona o valor de Q
+                q_val_txt = ax.text(x + 0.5, y + 0.1, "{:.1f}".format(q_values[x][y][np.argmax(q_values[x, y, :])]), 
+                                    va='center', ha='center', fontsize=8)
+                q_texts.append(q_val_txt) 
+
+    def trail(x, y):
+        # pinta o fundo do estado atual
+        if y != start[1]:
+            ax.add_patch(plt.Rectangle((x, y), 1, 1, fill=True, color='gray', alpha=0.5))
+
+    def update(frame, ax):
         x, y = states_arr[frame]
         ball.set_data([x + 0.5], [y + 0.5])
+        
+        # desenha o rastro
+        trail(x, y)
+
+        # limpa os textos de Q-Values
+        clear_q_texts()
+
+        # atualiza os textos de Q-Values
+        write_q_values(q_values_arr[frame], q_values_arr[0] if frame == 0 else q_values_arr[frame-1], ax)
+
         return ball,
 
     # anima a bola azul no caminho
     if len(states_arr) > 0:
         ball, = ax.plot([], [], 'bo', ms=20) 
-        anim = FuncAnimation(fig, update, frames=len(states_arr), init_func=init, repeat=False, blit=True, interval=50)
+        ani = FuncAnimation(fig, update, frames=range(len(states_arr)), fargs=(ax,), interval=10, repeat=False)
+
+    else:
+        write_q_values(q_values_arr, q_values_arr, ax)
 
     plt.savefig('plots/ex_qvalues.png')
     plt.show()
@@ -183,6 +218,7 @@ def q_learning(q_values, alpha):
     state = START
     rewards = 0.0
     states_arr = [state]
+    q_values_arr = [q_values.copy()]
 
     while state != FINISH:
         # escolhe a acao baseado na politica epsilon-greedy
@@ -199,30 +235,29 @@ def q_learning(q_values, alpha):
         )
         
         state = next_state
-        states_arr.append(state)
-    return rewards, states_arr
+        states_arr.append(state.copy())
+        q_values_arr.append(q_values.copy())
+    return rewards, states_arr, q_values_arr
 
 def main(run, epochs, plot_worlds_flag):
     print(f"Iniciando RUN {run} com {epochs} EPOCHS.")
     
     rewards = np.zeros(epochs)
     q_learning_values = np.zeros((WORLD_WIDTH, WORLD_HEIGHT, 4)) 
-    if(plot_worlds_flag):
-        plot_world(WORLD_HEIGHT, WORLD_WIDTH, START, FINISH, PENALITY_STATES, q_learning_values)
 
     for _ in range(run):
         print(f'Run: {_}')
         for i in range(epochs):
-            reward, states_arr = q_learning(q_learning_values, ALPHA) 
+            reward, states_arr, q_values_arr = q_learning(q_learning_values, ALPHA) 
             rewards[i] += reward
 
             if plot_worlds_flag and i % 10 == 0:
                 print(f'%: {i/epochs*100:.2f}')
-                plot_world(WORLD_HEIGHT, WORLD_WIDTH, START, FINISH, PENALITY_STATES, q_learning_values, states_arr, i, len(states_arr), reward)
-
+                plot_world(WORLD_HEIGHT, WORLD_WIDTH, START, FINISH, PENALITY_STATES, states_arr, q_values_arr, i, len(states_arr), reward)
+            
     # plota recompensas médias e mostra os valores de Q aprendidos
     plot_rewards(rewards/run)
-    plot_world(WORLD_HEIGHT, WORLD_WIDTH, START, FINISH, PENALITY_STATES, q_learning_values)
+    plot_world(WORLD_HEIGHT, WORLD_WIDTH, START, FINISH, PENALITY_STATES, [], q_learning_values)
 
 if __name__ == '__main__':
     X = 0
