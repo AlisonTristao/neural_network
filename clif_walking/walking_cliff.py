@@ -111,12 +111,24 @@ def plot_world(world_height, world_width, start, finish, penality_states, states
                 
                 # adiciona o texto de direcao
                 if direction_text:
-                    dir_txt = ax.text(x + 0.5, y + 0.5, direction_text, va='center', ha='center', fontsize=20, color= 'yellow' if color[x][y] == 1 else 'black')
+                    dir_txt = ax.text(x + 0.5, y + 0.5, direction_text, va='center', ha='center', fontsize=18, color= 'yellow' if color[x][y] == 1 else 'black')
                     q_texts.append(dir_txt)
                 
                 # adiciona o valor de Q
-                q_val_txt = ax.text(x + 0.5, y + 0.1, "{:.1f}".format(q_values[x][y][np.argmax(q_values[x, y, :])]), 
-                                    va='center', ha='center', fontsize=8)
+                q_val_txt = ax.text(x + 0.5, y + 0.9, "{:.1f}".format(q_values[x][y][UP]), 
+                                    va='center', ha='center', fontsize=6.5)
+                q_texts.append(q_val_txt) 
+
+                q_val_txt = ax.text(x + 0.5, y + 0.1, "{:.1f}".format(q_values[x][y][DOWN]), 
+                                    va='center', ha='center', fontsize=6.5)
+                q_texts.append(q_val_txt) 
+
+                q_val_txt = ax.text(x + 0.2, y + 0.5, "{:.1f}".format(q_values[x][y][LEFT]), 
+                                    va='center', ha='center', fontsize=6.5)
+                q_texts.append(q_val_txt) 
+
+                q_val_txt = ax.text(x + 0.8, y + 0.5, "{:.1f}".format(q_values[x][y][RIGHT]), 
+                                    va='center', ha='center', fontsize=6.5)
                 q_texts.append(q_val_txt) 
 
     def trail(x, y):
