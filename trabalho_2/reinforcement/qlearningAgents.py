@@ -63,7 +63,6 @@ class QLearningAgent(ReinforcementAgent):
           there are no legal actions, which is the case at the
           terminal state, you should return a value of 0.0.
         """
-        "*** YOUR CODE HERE ***"
         max_q_value = float('-inf')
         for action in self.getLegalActions(state):
             max_q_value = max(max_q_value, self.getQValue(state, action))
@@ -75,7 +74,6 @@ class QLearningAgent(ReinforcementAgent):
           are no legal actions, which is the case at the terminal state,
           you should return None.
         """
-        "*** YOUR CODE HERE ***"
         max_q_value = self.computeValueFromQValues(state)
         actions = self.getLegalActions(state)
         best_actions = []
@@ -103,7 +101,6 @@ class QLearningAgent(ReinforcementAgent):
         # Pick Action
         legalActions = self.getLegalActions(state)
         action = None
-        "*** YOUR CODE HERE ***"
         
         flip = np.random.rand()
         if flip < self.epsilon:
@@ -122,7 +119,6 @@ class QLearningAgent(ReinforcementAgent):
           NOTE: You should never call this function,
           it will be called on your behalf
         """
-        "*** YOUR CODE HERE ***"
         self.Q_values[(state, action)] += self.alpha * (reward + self.discount * self.computeValueFromQValues(nextState) - self.Q_values[(state, action)])
 
     def getPolicy(self, state):

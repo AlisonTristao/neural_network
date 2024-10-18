@@ -154,7 +154,7 @@ def plot_world(world_height, world_width, start, finish, penality_states, states
     # anima a bola azul no caminho
     if len(states_arr) > 0:
         ball, = ax.plot([], [], 'bo', ms=20) 
-        ani = FuncAnimation(fig, update, frames=range(len(states_arr)), fargs=(ax,), interval=10, repeat=False)
+        ani = FuncAnimation(fig, update, frames=range(len(states_arr)), fargs=(ax,), interval=1, repeat=False)
 
     else:
         write_q_values(q_values_arr, q_values_arr, ax)
@@ -256,6 +256,8 @@ def main(run, epochs, plot_worlds_flag):
     
     rewards = np.zeros(epochs)
     q_learning_values = np.zeros((WORLD_WIDTH, WORLD_HEIGHT, 4)) 
+
+    plot_world(WORLD_HEIGHT, WORLD_WIDTH, START, FINISH, PENALITY_STATES, [], q_learning_values)
 
     for _ in range(run):
         print(f'Run: {_}')
