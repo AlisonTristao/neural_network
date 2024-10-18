@@ -812,8 +812,11 @@ def register_input(input):
 currentFps = 0
 frameCount = 0
 start_time = 0
+# reset variables
+total_reward = 0.0
+
 def run_simluation(env, control_signal):   
-    global currentFps, frameCount, start_time
+    global currentFps, frameCount, start_time, total_reward
 
     frameCount += 1
     end_time = time.time()
@@ -823,11 +826,11 @@ def run_simluation(env, control_signal):
         frameCount = 0
         start_time = time.time()
 
-    # reset variables
-    total_reward = 0.0
-
     # calculares the position of the car using a step time of 1/FPS with trans and angle
     screen, flags, terminated, truncated, null_arr = env.step(control_signal)
+
+    total_reward += flags
+    print(f"total_reward {total_reward:+0.2f}")
 
     ''' # print the action and the total reward every 200 steps
     if steps % 200 == 0 or terminated or truncated:

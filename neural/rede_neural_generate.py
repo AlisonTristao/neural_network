@@ -1,11 +1,10 @@
 import tensorflow as tf
 from keras import layers, models, layers, models, Input # type: ignore
-from keras.layers import Concatenate # type: ignore
 
 IMG_H = 84
 IMG_W = 84   
 ADITIONAL_INPUT = 1
-LEN_GIF = 1  
+LEN_GIF = 4  
 
 def create_model():
     # rede convolucionar

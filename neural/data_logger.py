@@ -72,7 +72,6 @@ def load_images(pasta_imagens, len_gif=4):
         imagens.append(img.copy())
         
     imagens_por_linha = [imagens[i:i + len_gif] for i in range(0, len(imagens), len_gif)]
-    
     return np.array(imagens_por_linha, dtype=np.float32)/255.0
 
 def load_csv(arquivo_csv, len_gif=4):
@@ -85,4 +84,4 @@ def load_csv(arquivo_csv, len_gif=4):
             input.append([linha[1], linha[2]])
             speed.append(linha[3])
 
-    return np.array([input[i] for i in range(0, len(input), len_gif)], dtype=np.float32), np.array(speed, dtype=np.float32)/80
+    return np.array([input[i] for i in range(0, len(input), len_gif)], dtype=np.float32), np.array(speed, dtype=np.float32)/80 if len_gif == 1 else np.zeros(len(input)//len_gif, dtype=np.float32)
