@@ -16,8 +16,10 @@ y_valid = 'data/teste_seed_2/input_.csv'
 # dados para treino e validacao
 imagens = load_images(x_train, LEN_GIF)
 input, speed = load_csv(y_train, LEN_GIF)
+speed = np.zeros((speed.shape[0], 1))
 imagens_valid = load_images(x_valid, LEN_GIF)
 input_valid, speed_valid = load_csv(y_valid, LEN_GIF)
+speed_valid = np.zeros((speed_valid.shape[0], 1))
 
 # carrega o modelo e compila
 model = load_model('model.keras', custom_objects={'CustomAccuracy': CustomAccuracy})
