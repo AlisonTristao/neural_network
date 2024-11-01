@@ -4,7 +4,7 @@ from keras import layers, models, layers, models, Input # type: ignore
 IMG_H = 84
 IMG_W = 84   
 ADITIONAL_INPUT = 1
-LEN_GIF = 4  
+LEN_GIF = 1  
 
 def create_model():
     # rede convolucionar

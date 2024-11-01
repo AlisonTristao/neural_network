@@ -830,7 +830,7 @@ def run_simluation(env, control_signal):
     screen, flags, terminated, truncated, null_arr = env.step(control_signal)
 
     total_reward += flags
-    print(f"total_reward {total_reward:+0.2f}")
+    #print(f"total_reward {total_reward:+0.2f}")
 
     ''' # print the action and the total reward every 200 steps
     if steps % 200 == 0 or terminated or truncated:

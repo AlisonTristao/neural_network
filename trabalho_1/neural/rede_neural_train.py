@@ -5,7 +5,7 @@ from data_logger import *
 import numpy as np
 from CustomAccuracy import *
 
-LEN_GIF = 4  
+LEN_GIF = 1  
 
 x_train = 'data/teste_seed_1/pictures'
 y_train = 'data/teste_seed_1/input_.csv'
@@ -29,7 +29,7 @@ model.compile(optimizer='adam', loss='mean_squared_error', metrics=[CustomAccura
 history = model.fit([imagens, speed], input, epochs=100, batch_size=32, validation_data=([imagens_valid, speed_valid], input_valid)).history
 
 # salva o modelo
-model.save('model_trained_4frames.keras')
+model.save('model_trained_semvelocidade_fixa.keras')
 
 fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(8, 6))
 
@@ -49,5 +49,5 @@ ax2.legend()
 ax2.grid(True)
 
 plt.tight_layout()
-plt.savefig('plots/treinamento_dividido_1.png')
+plt.savefig('plots/treinamento_sem_velocidade_seedfixa.png')
 plt.show()
