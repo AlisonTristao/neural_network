@@ -15,7 +15,7 @@ LEN_GIF = 1
 car = CarRacing(render_mode="human")
 counter_loop = 0
 
-model = load_model('model_trained_random.keras')
+model = load_model('modelos/model_trained_treinamento_humano.keras')
 
 for _ in range(1):
     # init display with default values
@@ -42,8 +42,7 @@ for _ in range(1):
         # Quando temos pelo menos 4 quadros, fazemos a predição
         if len(last_frames) == LEN_GIF:
             # Normalizando e preparando o array para o modelo
-            #imagens_por_linha = np.array(last_frames, dtype=np.float32) / 255.0
-            imagens_por_linha = np.expand_dims(screen, axis=0)/ 255.0 
+            imagens_por_linha = np.array(last_frames, dtype=np.float32)/255.0
             imagens_por_linha = np.expand_dims(imagens_por_linha, axis=0)  # Adiciona dimensão do batch
 
             #comente do if até o else quando for com velocidade fixa em 0
@@ -64,5 +63,5 @@ for _ in range(1):
 
         counter_loop += 1
         if close or quit:
-            time.sleep(5)  # Sleep for 1 second
+            #time.sleep(2)  
             break

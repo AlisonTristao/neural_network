@@ -75,7 +75,6 @@ def load_images(pasta_imagens, len_gif=4):
     return np.array(imagens_por_linha, dtype=np.float32)/255.0
 
 def load_csv(arquivo_csv, len_gif=4):
-    print("len gif", len_gif)
     input = []
     speed = []
     with open(arquivo_csv, newline='', encoding='utf-8') as csvfile:

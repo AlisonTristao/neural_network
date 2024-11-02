@@ -21,11 +21,11 @@ signal_freq_trans = FrequenceSignal(control_freq)
 car = CarRacing(render_mode="human")
 
 # create the folder to save the data
-create_folder("teste_seed_2")
+create_folder("teste_seed_1")
 
 #model = load_model('model_trained.keras')
 
-for _ in range(1):
+for _ in range(9):
     # init display with default values
     car.reset(seed=1)
     screen, close = run_simluation(car, input)
